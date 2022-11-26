@@ -24,6 +24,7 @@ md= hd %>%
   mutate(victim_age = as.numeric(victim_age), victim_race = as.factor(victim_race), victim_sex = as.factor(victim_sex), homicides = ifelse(
            disposition %in% c("Closed without arrest", "Open/No arrest"), 0, 1))
 
-glm(homicides ~ victim_age+ victim_sex+ victim_race, data =md)
+fit_1 = glm(homicides ~ victim_age+ victim_sex+ victim_race, data =md) %>% 
+  broom::tidy()
 ```
 
