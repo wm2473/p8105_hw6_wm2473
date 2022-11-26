@@ -19,12 +19,18 @@ hd = read_csv("homicide-data.csv") %>%
 
 
 ```{r}
-md= hd %>% 
+md = hd %>% 
   filter(city_state %in% "Baltimore,MD") %>% 
   mutate(victim_age = as.numeric(victim_age), victim_race = as.factor(victim_race), victim_sex = as.factor(victim_sex), homicides = ifelse(
            disposition %in% c("Closed without arrest", "Open/No arrest"), 0, 1))
 
-fit_1 = glm(homicides ~ victim_age+ victim_sex+ victim_race, data =md) %>% 
-  broom::tidy()
+fit_1 = glm(homicides ~ victim_age+ victim_sex+ victim_race, data =md, family= binomial()) 
+    
+tidy = fit_1 %>% 
+  broom::tidy() %>% 
+  filter(term == "victim_sexMale") %>% 
+  mutate(OR = exp(estimate), lower = exp(estimate - 1.96 * std.error),
+    upper = exp(estimate + 1.96 * std.error)) %>% 
+select(term, OR, lower, upper) 
 ```
 
