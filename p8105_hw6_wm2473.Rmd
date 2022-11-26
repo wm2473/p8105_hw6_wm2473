@@ -31,6 +31,6 @@ tidy = fit_1 %>%
   filter(term == "victim_sexMale") %>% 
   mutate(OR = exp(estimate), lower = exp(estimate - 1.96 * std.error),
     upper = exp(estimate + 1.96 * std.error)) %>% 
-select(term, OR, lower, upper) 
+select(term, OR, lower, upper)
 ```
 
