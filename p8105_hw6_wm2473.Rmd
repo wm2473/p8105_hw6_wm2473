@@ -13,60 +13,67 @@ set.seed(1)
 ```
 
 ```{r}
+homicides_1 = ifelse(
+           disposition %in% c("Closed without arrest", "Open/No arrest"), 0, 1)
+```
+
+```{r}
 hd = read_csv("homicide-data.csv") %>% 
   janitor::clean_names() %>% 
   mutate(city_state = str_c(city,",", state), 
-         homicides = case_when(disposition == "Closed without arrest" ~ "unsolved homicides", disposition == "Open/No arrest" ~ "unsolved homicides", disposition == "Closed by arrest" ~ "solved homicides"), homicides_1 = ifelse(
-           disposition %in% c("Closed without arrest", "Open/No arrest"), 0, 1)) %>% 
-    filter(!city_state %in% c("Tulsa,AL","Dallas,TX", "Phoenix,AZ", "Kansas City,MO"),victim_race %in% c("Black","White"), victim_age == as.numeric(victim_age)) %>% 
+         homicides = case_when(disposition == "Closed without arrest" ~ "unsolved homicides", disposition == "Open/No arrest" ~ "unsolved homicides", disposition == "Closed by arrest" ~ "solved homicides"), victim_age = as.numeric(victim_age), homicides = as.factor(homicides)) %>% 
+    filter(!city_state %in% c("Tulsa,AL","Dallas,TX", "Phoenix,AZ", "Kansas City,MO"),victim_race %in% c("Black","White")) %>% 
   relocate(city_state)
 ```
 
 obtain the estimate and confidence interval 
 ```{r}
 md = hd %>% 
-  filter(city_state %in% "Baltimore,MD") %>% 
-  mutate(victim_age = as.numeric(victim_age), victim_race = as.factor(victim_race), victim_sex = as.factor(victim_sex), homicides_1 = ifelse(
-           disposition %in% c("Closed without arrest", "Open/No arrest"), 0, 1))
+  filter(city_state %in% "Baltimore,MD") 
+fit_1 = glm(homicides ~ victim_age+ victim_sex+ victim_race, data =md, family= binomial()) 
 
-fit_1 = glm(homicides_1 ~ victim_age+ victim_sex+ victim_race, data =md, family= binomial()) 
-    
 tidy = fit_1 %>% 
   broom::tidy() %>% 
-  filter(term == "victim_sexMale") %>% 
-  mutate(OR = exp(estimate), lower = exp(estimate - 1.96 * std.error),
-    upper = exp(estimate + 1.96 * std.error)) %>% 
-select(term, OR, lower, upper)
+   mutate(OR = exp(estimate), lower = exp(confint(fit_1, parm = "victim_sexMale")) [[1]], upper = exp(confint(fit_1, parm = "victim_sexMale")) [[2]]) %>% 
+  select(term, OR, lower, upper)
 ```
 
 
 ```{r}
 city_odds_ci = function(city_df){
-  
-  fit_test = glm(homicides_1 ~ victim_age + victim_sex + victim_race, data =city_df, family= binomial()) %>% 
-    broom::tidy() %>% 
-    filter(term == "victim_sexMale") %>%
-    mutate(OR = exp(estimate), lower = exp(estimate - 1.96 * std.error),
-    upper = exp(estimate + 1.96 * std.error)) 
-
-  return(fit_test)
-  
-}
+  fit_test = glm(homicides ~ victim_age + victim_sex + victim_race, data =city_df, family= binomial())  
+    male_vs_female = filter(broom::tidy(fit_test), term == "victim_sexMale") %>% 
+      pull(estimate) %>% 
+    mutate(OR = exp(estimate))
+    res = c(male_vs_female, confint(fit_test, parm = "victim_sexMale"))
+    
+  return(data.frame(t(res)))
+  }
 ```
 
 ```{r}
 nested_df = hd %>%
-  nest(alldata = uid:homicides_1) %>% 
+  nest(alldata = uid:homicides) %>% 
   mutate(
     test_results = map(alldata, city_odds_ci)
   ) %>% 
   select(city_state, test_results) %>% 
   unnest(test_results) %>% 
-  select(city_state, OR, lower, upper)
+  rename("lower" = "X2.5..", "upper" = "X97.5..")
 ```
 
 Creat a plot
 ```{r}
-
+nested_df %>%
+  mutate(city_state = fct_reorder(city_state, OR)) %>%
+  ggplot(aes(x = city_state, y = OR)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = lower, ymax = upper)) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1), 
+        plot.title = element_text(hjust = 0.5)) +
+  labs(title = "titleXXX",
+       x = "City(State)",
+       y = "Estimate") 
 ```
+
 
