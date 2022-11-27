@@ -18,7 +18,8 @@ hd = read_csv("homicide-data.csv") %>%
   mutate(city_state = str_c(city,",", state), 
          homicides = case_when(disposition == "Closed without arrest" ~ "unsolved homicides", disposition == "Open/No arrest" ~ "unsolved homicides", disposition == "Closed by arrest" ~ "solved homicides"), homicides_1 = ifelse(
            disposition %in% c("Closed without arrest", "Open/No arrest"), 0, 1)) %>% 
-    filter(!city_state %in% c("Tulsa,AL","Dallas,TX", "Phoenix,AZ", "Kansas City,MO"),victim_race %in% c("Black","White"), victim_age == as.numeric(victim_age))
+    filter(!city_state %in% c("Tulsa,AL","Dallas,TX", "Phoenix,AZ", "Kansas City,MO"),victim_race %in% c("Black","White"), victim_age == as.numeric(victim_age)) %>% 
+  relocate(city_state)
 ```
 
 obtain the estimate and confidence interval 
@@ -41,13 +42,12 @@ select(term, OR, lower, upper)
 
 ```{r}
 city_odds_ci = function(city_df){
-  city_summarize = city_df %>%
-  summarise(
-    unsolved = sum(homicides == "solved homicides"),
-    n = n())
   
-  fit_test = glm(homicides_1 ~ victim_age + victim_sex + victim_race, data =hd, family= binomial()) 
-  broom::tidy() %>% 
+  fit_test = glm(homicides_1 ~ victim_age + victim_sex + victim_race, data =city_df, family= binomial()) %>% 
+    broom::tidy() %>% 
+    filter(term == "victim_sexMale") %>%
+    mutate(OR = exp(estimate), lower = exp(estimate - 1.96 * std.error),
+    upper = exp(estimate + 1.96 * std.error)) 
 
   return(fit_test)
   
@@ -58,11 +58,15 @@ city_odds_ci = function(city_df){
 nested_df = hd %>%
   nest(alldata = uid:homicides_1) %>% 
   mutate(
-    test_results = map(alldata, city_odds_ci),
-    cleanresults = map(test_results, broom::tidy)
+    test_results = map(alldata, city_odds_ci)
   ) %>% 
-  select(city_state, cleanresults) %>% 
-  unnest(cleanresults) %>% 
-  select(city_state, estimate, starts_with("conf"))
+  select(city_state, test_results) %>% 
+  unnest(test_results) %>% 
+  select(city_state, OR, lower, upper)
+```
+
+Creat a plot
+```{r}
+
 ```
 
