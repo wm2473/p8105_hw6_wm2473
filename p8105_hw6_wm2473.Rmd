@@ -17,7 +17,7 @@ hd = read_csv("homicide-data.csv") %>%
     filter(!city_state %in% c("Tulsa,AL","Dallas,TX", "Phoenix,AZ", "Kansas City,MO"),victim_race %in% c("Black","White"), victim_age == as.numeric(victim_age))
 ```
 
-
+obtain the estimate and confidence interval 
 ```{r}
 md = hd %>% 
   filter(city_state %in% "Baltimore,MD") %>% 
