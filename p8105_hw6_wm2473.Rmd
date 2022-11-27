@@ -43,11 +43,9 @@ tidy = fit_1 %>%
 city_odds_ci = function(city_df){
   fit_test = glm(homicides ~ victim_age + victim_sex + victim_race, data =city_df, family= binomial())  
     male_vs_female = filter(broom::tidy(fit_test), term == "victim_sexMale") %>% 
-      pull(estimate) %>% 
-    mutate(OR = exp(estimate))
-    res = c(male_vs_female, confint(fit_test, parm = "victim_sexMale"))
+    mutate(OR = exp(estimate), lower = exp(confint(fit_test, parm = "victim_sexMale")) [1], upper = exp(confint(fit_test, parm = "victim_sexMale")) [2])
     
-  return(data.frame(t(res)))
+  return(male_vs_female)
   }
 ```
 
@@ -59,7 +57,7 @@ nested_df = hd %>%
   ) %>% 
   select(city_state, test_results) %>% 
   unnest(test_results) %>% 
-  rename("lower" = "X2.5..", "upper" = "X97.5..")
+select(city_state, OR, lower, upper)
 ```
 
 Creat a plot
