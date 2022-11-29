@@ -69,8 +69,8 @@ nested_df %>%
   geom_errorbar(aes(ymin = lower, ymax = upper)) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1), 
         plot.title = element_text(hjust = 0.5)) +
-  labs(title = "titleXXX",
-       x = "City(State)",
+  labs(title = "City Estimation",
+       x = "City_State",
        y = "Estimate") 
 ```
 
