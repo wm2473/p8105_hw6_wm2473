@@ -13,11 +13,6 @@ set.seed(1)
 ```
 
 ```{r}
-homicides_1 = ifelse(
-           disposition %in% c("Closed without arrest", "Open/No arrest"), 0, 1)
-```
-
-```{r}
 hd = read_csv("homicide-data.csv") %>% 
   janitor::clean_names() %>% 
   mutate(city_state = str_c(city,",", state), 
@@ -31,10 +26,12 @@ obtain the estimate and confidence interval
 md = hd %>% 
   filter(city_state %in% "Baltimore,MD") 
 fit_1 = glm(homicides ~ victim_age+ victim_sex+ victim_race, data =md, family= binomial()) 
+broom::tidy(fit_1)
 
 tidy = fit_1 %>% 
   broom::tidy() %>% 
-   mutate(OR = exp(estimate), lower = exp(confint(fit_1, parm = "victim_sexMale")) [[1]], upper = exp(confint(fit_1, parm = "victim_sexMale")) [[2]]) %>% 
+   mutate(OR = exp(estimate), lower = exp(estimate - 1.96*std.error), upper = exp(estimate + 1.96*std.error)) %>% 
+  filter(term %in% "victim_sexMale") %>% 
   select(term, OR, lower, upper)
 ```
 
@@ -43,7 +40,7 @@ tidy = fit_1 %>%
 city_odds_ci = function(city_df){
   fit_test = glm(homicides ~ victim_age + victim_sex + victim_race, data =city_df, family= binomial())  
     male_vs_female = filter(broom::tidy(fit_test), term == "victim_sexMale") %>% 
-    mutate(OR = exp(estimate), lower = exp(confint(fit_test, parm = "victim_sexMale")) [1], upper = exp(confint(fit_test, parm = "victim_sexMale")) [2])
+    mutate(OR = exp(estimate), lower = exp(estimate - 1.96*std.error), upper = exp(estimate + 1.96*std.error))
     
   return(male_vs_female)
   }
@@ -74,4 +71,9 @@ nested_df %>%
        y = "Estimate") 
 ```
 
+
+Problem 3
+```{r}
+
+```
 
