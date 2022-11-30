@@ -80,3 +80,12 @@ bw = read_csv("birthweight.csv") %>%
 sum(is.na(bw)) ## make sure that there is no missing value
 ```
 
+
+```{r}
+fit_bwt = lm(bwt ~ blength + bhead, data = bw) 
+
+fit_bwt %>%   
+  broom::tidy() %>% 
+  knitr::kable(digits = 3)
+```
+
