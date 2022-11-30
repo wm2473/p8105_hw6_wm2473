@@ -89,3 +89,20 @@ fit_bwt %>%
   knitr::kable(digits = 3)
 ```
 
+```{r}
+bw %>%
+  modelr::add_residuals(fit_bwt) %>%
+  modelr::add_predictions(fit_bwt) %>%
+  ggplot(aes(x = pred, y = resid)) +
+  geom_point() +
+  geom_hline(yintercept = 0,
+             col = "red",
+             linetype = "dashed") +
+  geom_smooth(method = "loess") +
+  labs(title = "Residual vs Fitted Plot",
+       x = "Fitted values",
+       y = "Residuals") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+
