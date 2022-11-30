@@ -74,6 +74,9 @@ nested_df %>%
 
 Problem 3
 ```{r}
-
+bw = read_csv("birthweight.csv") %>% 
+  janitor::clean_names() %>% 
+   mutate(babysex = as.factor(babysex),frace = as.factor(frace),malform = as.factor(malform), mrace = as.factor(mrace)) 
+sum(is.na(bw)) ## make sure that there is no missing value
 ```
 
