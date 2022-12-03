@@ -71,19 +71,20 @@ nested_df %>%
   labs(title = "City Estimation",
        x = "City_State",
        y = "Estimate") 
+#Comment:
 ```
 
 
 Problem 3
+Load the dataset, clean and check for missing data
 ```{r}
 bw = read_csv("birthweight.csv") %>% 
   janitor::clean_names() %>% 
    mutate(babysex = as.factor(babysex),frace = as.factor(frace),malform = as.factor(malform), mrace = as.factor(mrace)) 
-sum(is.na(bw)) ## make sure that there is no missing value
+sum(is.na(bw)) ## make sure no missing value
 ```
 
-
-
+Propose a regression model for birthweight.(Based on the a data-driven model-building)
 ```{r}
 bw %>%
   select(-babysex,-frace,-malform,-mrace,-pnumlbw,-pnumsga) %>%
@@ -97,7 +98,6 @@ bw %>%
     order = "AOE"
   )
 ```
-
 
 ```{r}
 fit_bwt = lm(bwt ~ blength + bhead, data = bw) 
@@ -131,8 +131,6 @@ Describe the modeling process
 3. Build another linear regression model which may depend on baby’s length and baby’s head circumference at birth.
 
 4. From the graph we can see that the blue line close to the dashed line especially from the value 1500 to 4000 kind of overlapping. We can say that this linearity is reasonable. 
-
-
 
 Compare your model to two others:
 ```{r}
