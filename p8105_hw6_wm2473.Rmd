@@ -14,11 +14,12 @@ library(ggplot2)
 set.seed(1)
 ```
 
+Problem 2
 ```{r}
 hd = read_csv("homicide-data.csv") %>% 
   janitor::clean_names() %>% 
   mutate(city_state = str_c(city,",", state), 
-         homicides = case_when(disposition == "Closed without arrest" ~ "unsolved homicides", disposition == "Open/No arrest" ~ "unsolved homicides", disposition == "Closed by arrest" ~ "solved homicides"), victim_age = as.numeric(victim_age), homicides = as.factor(homicides)) %>% 
+         homicides = case_when(disposition == "Closed without arrest" ~ 0, disposition == "Open/No arrest" ~ 0, disposition == "Closed by arrest" ~ 1), victim_age = as.numeric(victim_age), homicides = as.factor(homicides)) %>% 
     filter(!city_state %in% c("Tulsa,AL","Dallas,TX", "Phoenix,AZ", "Kansas City,MO"),victim_race %in% c("Black","White")) %>% 
   relocate(city_state)
 ```
@@ -26,15 +27,17 @@ hd = read_csv("homicide-data.csv") %>%
 obtain the estimate and confidence interval 
 ```{r}
 md = hd %>% 
+    select(city_state, homicides, victim_age, victim_sex, victim_race) %>% 
   filter(city_state %in% "Baltimore,MD") 
-fit_1 = glm(homicides ~ victim_age+ victim_sex+ victim_race, data =md, family= binomial()) 
-broom::tidy(fit_1)
+  fit_1 = glm(homicides ~ victim_age+ victim_sex+ victim_race, family= binomial(), data = md) 
 
-tidy = fit_1 %>% 
+
+fit_1 %>% 
   broom::tidy() %>% 
    mutate(OR = exp(estimate), lower = exp(estimate - 1.96*std.error), upper = exp(estimate + 1.96*std.error)) %>% 
-  filter(term %in% "victim_sexMale") %>% 
+  filter(term == "victim_sexMale") %>% 
   select(term, OR, lower, upper)
+
 ```
 
 
@@ -50,7 +53,7 @@ city_odds_ci = function(city_df){
 
 ```{r}
 nested_df = hd %>%
-  nest(alldata = uid:homicides) %>% 
+  nest(alldata = -city_state) %>% 
   mutate(
     test_results = map(alldata, city_odds_ci)
   ) %>% 
@@ -71,7 +74,7 @@ nested_df %>%
   labs(title = "City Estimation",
        x = "City_State",
        y = "Estimate") 
-#Comment:
+#Comment: As we can seen from the graph, the Albuquerque, NM
 ```
 
 
