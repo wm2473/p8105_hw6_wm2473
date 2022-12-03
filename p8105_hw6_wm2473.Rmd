@@ -147,6 +147,14 @@ mutate(
     everything(),
     names_to = "model", 
     values_to = "rmse",
-    names_prefix = "rmse_")
+    names_prefix = "rmse_")%>% 
+  mutate(model = fct_inorder(model)) %>% 
+  ggplot(aes(x = model, y = rmse, color = model)) + 
+  geom_violin() + 
+  labs(title = "Different Models rmse",
+       y = "rmse",
+       x = "Model") 
+
+#Conclusion: As we can seen from the graph, when rmse value larger in model 2, model 1 and 3 is more accurate. We can conclude that the error rate of linear regression model 2 is high.
 ```
 
