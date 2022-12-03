@@ -8,6 +8,8 @@ date: "2022-11-26"
 library(tidyverse)
 library(readxl)
 library(rvest)
+library(modelr)
+library(corrplot)
 library(ggplot2)
 set.seed(1)
 ```
@@ -81,6 +83,22 @@ sum(is.na(bw)) ## make sure that there is no missing value
 ```
 
 
+
+```{r}
+bw %>%
+  select(-babysex,-frace,-malform,-mrace,-pnumlbw,-pnumsga) %>%
+  cor(method = "pearson") %>%
+  corrplot(
+    method = "color",
+    type = "lower",
+    tl.col = "Black",
+    tl.srt = 45,
+    diag = F,
+    order = "AOE"
+  )
+```
+
+
 ```{r}
 fit_bwt = lm(bwt ~ blength + bhead, data = bw) 
 
@@ -105,4 +123,20 @@ bw %>%
   theme(plot.title = element_text(hjust = 0.5))
 ```
 
+Compare your model to two others:
+```{r}
+cv = modelr::crossv_mc(bw, 100) 
+cv_df %>%
+  mutate(train = map(train, as_tibble),
+         test = map(test, as_tibble)) %>%
+  mutate(
+    mod_blength_bhead = map(train, ~ lm(bwt ~ blength + bhead, data = .x)),
+    mod_blength_gaweeks = map(train, ~ lm(bwt ~ blength + gaweeks, data = .x)),
+    mod_bheaed_blength_sex = map(
+      train,
+      ~ lm(bwt ~ babysex + bhead + blength + babysex * bhead + 
+          babysex * blength + bhead * blength + 
+          babysex * bhead * blength,data = .x))
+  ) 
+```
 
