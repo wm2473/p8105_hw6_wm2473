@@ -137,6 +137,16 @@ cv_df %>%
       ~ lm(bwt ~ babysex + bhead + blength + babysex * bhead + 
           babysex * blength + bhead * blength + 
           babysex * bhead * blength,data = .x))
-  ) 
+  ) %>%  
+mutate(
+    rmse_blength_bhead = map2_dbl(mod_blength_bhead, test, ~ rmse(model = .x, data = .y)),
+    rmse_blength_gaweeks = map2_dbl(mod_blength_gaweeks, test, ~ rmse(model = .x, data = .y)),
+    rmse_bheaed_blength_sex = map2_dbl(mod_bheaed_blength_sex, test, ~ rmse(model = .x, data = .y))) %>% 
+  select(starts_with("rmse")) %>% 
+  pivot_longer(
+    everything(),
+    names_to = "model", 
+    values_to = "rmse",
+    names_prefix = "rmse_")
 ```
 
