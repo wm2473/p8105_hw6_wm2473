@@ -73,8 +73,8 @@ nested_df %>%
         plot.title = element_text(hjust = 0.5)) +
   labs(title = "City Estimation",
        x = "City_State",
-       y = "Estimate") 
-#Comment: As we can seen from the graph, the Albuquerque, NM
+       y = "Odd ratio with 95% CI") 
+#Comment: As we can seen from the graph, except "Fresno_CA", "Stockton_CA" and "Albuquerque_NM" the odd ratio is greater than 2, most cities have a odd ratro from 0 to 1. Also, the 95% CI(confident interval) of these three cities are wider than the rest. New York has the lowest odds ratio for solving homicides comparing male victims to female victims. 
 ```
 
 
