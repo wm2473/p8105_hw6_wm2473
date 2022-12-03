@@ -123,6 +123,17 @@ bw %>%
   theme(plot.title = element_text(hjust = 0.5))
 ```
 
+Describe the modeling process
+1. Make a multiple Pearson’s correlation coefficient matrix(heat graph) and we can see which variable has the highest correlation with bwt(baby’s birth weight). And found that the color of blength(baby’s length at birth) and bhead(baby’s head circumference at birth) is darker compared with the other which means that these two variable have a high correlation with bwt.
+
+2. Build a linear regression model for bhead and blength with bwt.
+
+3. Build another linear regression model which may depend on baby’s length and baby’s head circumference at birth.
+
+4. From the graph we can see that the blue line close to the dashed line especially from the value 1500 to 4000 kind of overlapping. We can say that this linearity is reasonable. 
+
+
+
 Compare your model to two others:
 ```{r}
 cv = modelr::crossv_mc(bw, 100) 
